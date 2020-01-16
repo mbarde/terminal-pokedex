@@ -68,6 +68,7 @@ class Menu:
         self.isLoading = False
         self.render()
         show_image(tmpFilename)
+        os.remove(tmpFilename)
         self.preventNextRender = True
 
     def moveCursorUp(self):
