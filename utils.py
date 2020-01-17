@@ -20,7 +20,7 @@ def get_color(r, g, b):
 
 
 # https://github.com/nikhilkumarsingh/terminal-image-viewer
-def show_image(img_path, max_height=False):
+def show_image(img_path, menu, max_height=False):
     try:
         img = Image.open(img_path).convert('RGBA')
     except FileNotFoundError:
@@ -45,8 +45,9 @@ def show_image(img_path, max_height=False):
     for x in range(h):
         for y in range(w):
             pix = img_arr[x][y]
-            print(get_color(pix[0], pix[1], pix[2]), sep='', end='')
-        print()
+            # print(get_color(pix[0], pix[1], pix[2]), end='')
+            menu.appendLine(get_color(pix[0], pix[1], pix[2]), (40 + y, x))
+        # print()
 
 
 # https://stackoverflow.com/a/6599441
