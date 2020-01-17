@@ -15,7 +15,10 @@ def get_ansi_color_code(r, g, b):
     return 16 + (36 * round(r / 255 * 5)) + (6 * round(g / 255 * 5)) + round(b / 255 * 5)
 
 
-def get_color(r, g, b):
+def get_color(r, g, b, a):
+    if a == 0:
+        # full transparency
+        return ' '
     return "\x1b[48;5;{}m \x1b[0m".format(int(get_ansi_color_code(r, g, b)))
 
 
@@ -31,7 +34,7 @@ def show_image(img_path, menu, max_height=False):
     img = img.crop(imageBox)
 
     # transparent background should be displayed white
-    img = Image.composite(img, Image.new('RGBA', img.size, 'white'), img)
+    # img = Image.composite(img, Image.new('RGBA', img.size, 'white'), img)
 
     # resize
     if max_height is not False and max_height < img.height:
@@ -46,10 +49,8 @@ def show_image(img_path, menu, max_height=False):
         line = ''
         for y in range(w):
             pix = img_arr[x][y]
-            # print(get_color(pix[0], pix[1], pix[2]), end='')
-            line += get_color(pix[0], pix[1], pix[2])
+            line += get_color(pix[0], pix[1], pix[2], pix[3])
         menu.appendLine(line, (40, x))
-        # print()
 
 
 # https://stackoverflow.com/a/6599441
