@@ -69,6 +69,7 @@ class Menu:
         self.isLoading = False
         self.render()
         show_image(tmpFilename, self)
+        os.system('clear')
         self.renderVirtualLines()
         os.remove(tmpFilename)
         self.preventNextRender = True

@@ -43,10 +43,12 @@ def show_image(img_path, menu, max_height=False):
     h, w, c = img_arr.shape
 
     for x in range(h):
+        line = ''
         for y in range(w):
             pix = img_arr[x][y]
             # print(get_color(pix[0], pix[1], pix[2]), end='')
-            menu.appendLine(get_color(pix[0], pix[1], pix[2]), (40 + y, x))
+            line += get_color(pix[0], pix[1], pix[2])
+        menu.appendLine(line, (40, x))
         # print()
 
 
