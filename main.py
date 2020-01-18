@@ -112,8 +112,9 @@ class Menu:
         clearVirtualLine = self.remove_control_characters(virtualLine)
         if offX > len(clearVirtualLine):
             toFill = (offX - len(clearVirtualLine)) - 1
-            virtualLine += ' ' * toFill + line
-            self.virtualLines[offY] = virtualLine
+            virtualLine += ' ' * toFill
+        virtualLine = virtualLine[:offX] + line
+        self.virtualLines[offY] = virtualLine
 
     def renderVirtualLines(self):
         for line in self.virtualLines:
