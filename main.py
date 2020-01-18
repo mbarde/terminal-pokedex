@@ -1,6 +1,7 @@
 from utils import download_file
 from utils import get_json_from_url
 from utils import read_single_keypress
+from utils import remove_ansi_clr_codes
 from utils import show_image
 
 import functools
@@ -70,7 +71,6 @@ class Menu:
         self.render()
         _, terminalHeight = os.get_terminal_size()
         show_image(tmpFilename, self, max_height=terminalHeight-1)
-        os.system('clear')
         self.renderVirtualLines()
         os.remove(tmpFilename)
         self.preventNextRender = True
@@ -93,39 +93,38 @@ class Menu:
     def clearVirtualLines(self):
         self.virtualLines = []
 
-    def appendLine(self, line, offset=None):
-        if offset is None:
-            self.virtualLines.append(line)
-            return
+    def appendLine(self, line):
+        self.virtualLines.append(line)
 
+    # insert text at specified offset within the virtual lines
+    def insertIntoVirtualLines(self, text, offset):
         if len(offset) < 2:
             return
 
         offX = offset[0]
         offY = offset[1]
 
+        # fill vertical if necessary
         if offY > len(self.virtualLines) - 1:
             toFill = offY - len(self.virtualLines) + 1
             self.virtualLines += [''] * toFill
 
         virtualLine = self.virtualLines[offY]
-        clearVirtualLine = self.remove_control_characters(virtualLine)
+        clearVirtualLine = remove_ansi_clr_codes(virtualLine)
+
+        # fill horizontal if necessary
         if offX > len(clearVirtualLine):
             toFill = (offX - len(clearVirtualLine)) - 1
             virtualLine += ' ' * toFill
-        virtualLine = virtualLine[:offX] + line
+
+        diffLen = len(virtualLine) - len(clearVirtualLine)
+        virtualLine = virtualLine[:offX + diffLen] + text
         self.virtualLines[offY] = virtualLine
 
     def renderVirtualLines(self):
+        os.system('clear')
         for line in self.virtualLines:
             print(line)
-
-    def remove_control_characters(self, s):
-        import unicodedata
-        res = ''.join(ch for ch in s if unicodedata.category(ch)[0] != 'C')
-        import re
-        res = re.sub(r'\\033\[.*m', '', res)
-        return res
 
     def writeHeader(self):
         self.appendLine('****{0}****'.format('*' * len(self.heading)))
@@ -140,8 +139,7 @@ class Menu:
         for option in self.options:
             label = option['label']
             if i == self.selected:
-                # sty.bg.blue + sty.fg.white + label + sty.fg.black + sty.bg.rs
-                label = '> ' + label
+                label = sty.bg.blue + sty.fg.white + label + sty.fg.rs + sty.bg.rs
             self.appendLine(label)
             i += 1
 
@@ -150,7 +148,6 @@ class Menu:
             self.preventNextRender = False
             return
 
-        os.system('clear')
         self.clearVirtualLines()
         self.writeHeader()
 

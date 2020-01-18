@@ -1,7 +1,12 @@
 from PIL import Image
 
+import fcntl
 import json
 import numpy
+import os
+import re
+import sys
+import termios
 import urllib3
 
 
@@ -50,7 +55,7 @@ def show_image(img_path, menu, max_height=False):
         for y in range(w):
             pix = img_arr[x][y]
             line += get_color(pix[0], pix[1], pix[2], pix[3])
-        menu.appendLine(line, (40, x))
+        menu.insertIntoVirtualLines(line, offset=(40, x))
 
 
 # https://stackoverflow.com/a/6599441
@@ -68,10 +73,6 @@ def read_single_keypress():
     handled.
 
     """
-    import fcntl
-    import os
-    import sys
-    import termios
     fd = sys.stdin.fileno()
     # save old state
     flags_save = fcntl.fcntl(fd, fcntl.F_GETFL)
@@ -129,3 +130,7 @@ def download_file(url, filename):
                 break
             out.write(data)
     res.release_conn()
+
+
+def remove_ansi_clr_codes(text):
+    return re.sub(r'\x1b\[.*?m', '', text)
