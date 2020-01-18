@@ -68,7 +68,8 @@ class Menu:
         download_file(imgUrl, tmpFilename)
         self.isLoading = False
         self.render()
-        show_image(tmpFilename, self)
+        _, terminalHeight = os.get_terminal_size()
+        show_image(tmpFilename, self, max_height=terminalHeight-1)
         os.system('clear')
         self.renderVirtualLines()
         os.remove(tmpFilename)
