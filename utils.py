@@ -28,7 +28,7 @@ def get_color(r, g, b, a):
 
 
 # https://github.com/nikhilkumarsingh/terminal-image-viewer
-def show_image(img_path, menu, max_height=False):
+def show_image(img_path, menu, offset=(0, 0), max_height=False):
     try:
         img = Image.open(img_path).convert('RGBA')
     except FileNotFoundError:
@@ -38,24 +38,24 @@ def show_image(img_path, menu, max_height=False):
     imageBox = img.getbbox()
     img = img.crop(imageBox)
 
-    # transparent background should be displayed white
-    # img = Image.composite(img, Image.new('RGBA', img.size, 'white'), img)
-
     # resize
     if max_height is not False and max_height < img.height:
         h = max_height
         w = int((img.width / img.height) * h)
-        img = img.resize((w, h), Image.ANTIALIAS)
+        img = img.resize((w, h))
 
     img_arr = numpy.asarray(img)
     h, w, c = img_arr.shape
 
-    for x in range(h):
+    offX = offset[0]
+    offY = offset[1]
+
+    for y in range(h):
         line = ''
-        for y in range(w):
-            pix = img_arr[x][y]
+        for x in range(w):
+            pix = img_arr[y][x]
             line += get_color(pix[0], pix[1], pix[2], pix[3])
-        menu.insertIntoVirtualLines(line, offset=(40, x))
+        menu.insertIntoVirtualLines(line, offset=(offX, y + offY))
 
 
 # https://stackoverflow.com/a/6599441

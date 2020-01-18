@@ -70,7 +70,7 @@ class Menu:
         self.isLoading = False
         self.render()
         _, terminalHeight = os.get_terminal_size()
-        show_image(tmpFilename, self, max_height=terminalHeight-1)
+        show_image(tmpFilename, self, offset=(40, 1), max_height=terminalHeight-2)
         self.renderVirtualLines()
         os.remove(tmpFilename)
         self.preventNextRender = True
