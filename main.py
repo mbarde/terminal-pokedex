@@ -18,6 +18,7 @@ class Menu:
         self.limitPerPage = 20
         self.options = []
         self.preventNextRender = False
+        self.virtualLines = []
         self.selected = 0
         self.loadPage()
 
@@ -67,7 +68,10 @@ class Menu:
         download_file(imgUrl, tmpFilename)
         self.isLoading = False
         self.render()
-        show_image(tmpFilename)
+        _, terminalHeight = os.get_terminal_size()
+        show_image(tmpFilename, self, max_height=terminalHeight-1)
+        os.system('clear')
+        self.renderVirtualLines()
         os.remove(tmpFilename)
         self.preventNextRender = True
 
@@ -86,30 +90,76 @@ class Menu:
         if callable(option['onclick']):
             option['onclick']()
 
+    def clearVirtualLines(self):
+        self.virtualLines = []
+
+    def appendLine(self, line, offset=None):
+        if offset is None:
+            self.virtualLines.append(line)
+            return
+
+        if len(offset) < 2:
+            return
+
+        offX = offset[0]
+        offY = offset[1]
+
+        if offY > len(self.virtualLines) - 1:
+            toFill = offY - len(self.virtualLines) + 1
+            self.virtualLines += [''] * toFill
+
+        virtualLine = self.virtualLines[offY]
+        clearVirtualLine = self.remove_control_characters(virtualLine)
+        if offX > len(clearVirtualLine):
+            toFill = (offX - len(clearVirtualLine)) - 1
+            virtualLine += ' ' * toFill
+        virtualLine = virtualLine[:offX] + line
+        self.virtualLines[offY] = virtualLine
+
+    def renderVirtualLines(self):
+        for line in self.virtualLines:
+            print(line)
+
+    def remove_control_characters(self, s):
+        import unicodedata
+        res = ''.join(ch for ch in s if unicodedata.category(ch)[0] != 'C')
+        import re
+        res = re.sub(r'\\033\[.*m', '', res)
+        return res
+
+    def writeHeader(self):
+        self.appendLine('****{0}****'.format('*' * len(self.heading)))
+        self.appendLine('*** {0} ***'.format(self.heading))
+        self.appendLine('****{0}****'.format('*' * len(self.heading)))
+        self.appendLine('')
+        self.appendLine('--- Press ESC to quit ---')
+        self.appendLine('')
+
+    def writeOptions(self):
+        i = 0
+        for option in self.options:
+            label = option['label']
+            if i == self.selected:
+                # sty.bg.blue + sty.fg.white + label + sty.fg.black + sty.bg.rs
+                label = '> ' + label
+            self.appendLine(label)
+            i += 1
+
     def render(self):
         if self.preventNextRender:
             self.preventNextRender = False
             return
 
         os.system('clear')
-        print('****{0}****'.format('*' * len(self.heading)))
-        print('*** {0} ***'.format(self.heading))
-        print('****{0}****'.format('*' * len(self.heading)))
-        print('')
-        print('--- Press ESC to quit ---')
-        print('')
+        self.clearVirtualLines()
+        self.writeHeader()
 
         if self.isLoading:
-            print('Loading ...')
-            return
+            self.appendLine('Loading ...')
+        else:
+            self.writeOptions()
 
-        i = 0
-        for option in self.options:
-            label = option['label']
-            if i == self.selected:
-                label = sty.bg.blue + sty.fg.white + label + sty.fg.black + sty.bg.rs
-            print(label)
-            i += 1
+        self.renderVirtualLines()
 
 
 KEYS_UP = ('\x1b', '[', 'A')
