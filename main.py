@@ -71,22 +71,29 @@ class Menu:
         self.render()
         data = get_json_from_url(pokemonUrl)
         imgUrl = data['sprites']['front_default']
+
         if imgUrl is None:
             self.isLoading = False
             msg = 'Found no sprite for {0} (#{1}) :('.format(data['name'].capitalize(), data['id'])
-            self.render()
+            self.clearVirtualLines()
+            self.writeMenu()
             self.insertIntoVirtualLines(msg, offset=(40, 5))
             self.renderVirtualLines()
             self.preventNextRender = True
             return
+
         tmpFilename = 'tmp.png'
         download_file(imgUrl, tmpFilename)
+
         self.isLoading = False
-        self.render()
+        self.clearVirtualLines()
+        self.writeMenu()
+
         _, terminalHeight = os.get_terminal_size()
         show_image(data, tmpFilename, self, offset=(40, 0), max_height=terminalHeight-3)
-        self.renderVirtualLines()
         os.remove(tmpFilename)
+
+        self.renderVirtualLines()
         self.preventNextRender = True
 
     def viewRandomImage(self):
@@ -164,12 +171,7 @@ class Menu:
             self.appendLine(label)
             i += 1
 
-    def render(self):
-        if self.preventNextRender:
-            self.preventNextRender = False
-            return
-
-        self.clearVirtualLines()
+    def writeMenu(self):
         self.writeHeader()
 
         if self.isLoading:
@@ -177,6 +179,13 @@ class Menu:
         else:
             self.writeOptions()
 
+    def render(self):
+        if self.preventNextRender:
+            self.preventNextRender = False
+            return
+
+        self.clearVirtualLines()
+        self.writeMenu()
         self.renderVirtualLines()
 
 
