@@ -6,6 +6,7 @@ from utils import show_image
 
 import functools
 import os
+import random
 import sty
 
 
@@ -37,9 +38,14 @@ class Menu:
                 'label': '[prev page]',
                 'onclick': self.loadPrevPage
             })
+        else:
+            self.options.append({
+                'label': '[RANDOM]',
+                'onclick': self.viewRandomImage
+            })
         for pokemon in pokemons:
             option = {
-                'label': pokemon['name'],
+                'label': pokemon['name'].capitalize(),
                 'onclick': functools.partial(self.viewImage, pokemon['url']),
             }
             self.options.append(option)
@@ -65,15 +71,29 @@ class Menu:
         self.render()
         data = get_json_from_url(pokemonUrl)
         imgUrl = data['sprites']['front_default']
+        if imgUrl is None:
+            self.isLoading = False
+            msg = 'Found no sprite for {0} (#{1}) :('.format(data['name'].capitalize(), data['id'])
+            self.render()
+            self.insertIntoVirtualLines(msg, offset=(40, 5))
+            self.renderVirtualLines()
+            self.preventNextRender = True
+            return
         tmpFilename = 'tmp.png'
         download_file(imgUrl, tmpFilename)
         self.isLoading = False
         self.render()
         _, terminalHeight = os.get_terminal_size()
-        show_image(tmpFilename, self, offset=(40, 1), max_height=terminalHeight-2)
+        show_image(data, tmpFilename, self, offset=(40, 0), max_height=terminalHeight-3)
         self.renderVirtualLines()
         os.remove(tmpFilename)
         self.preventNextRender = True
+
+    def viewRandomImage(self):
+        url = self.baseUrl + '/pokemon?offset=0&limit=1000'
+        all = get_json_from_url(url)['results']
+        rPokemon = random.choice(all)
+        self.viewImage(rPokemon['url'])
 
     def moveCursorUp(self):
         self.selected -= 1
@@ -127,9 +147,10 @@ class Menu:
             print(line)
 
     def writeHeader(self):
-        self.appendLine('****{0}****'.format('*' * len(self.heading)))
+        lenHeading = len(remove_ansi_clr_codes(self.heading))
+        self.appendLine('****{0}****'.format('*' * lenHeading))
         self.appendLine('*** {0} ***'.format(self.heading))
-        self.appendLine('****{0}****'.format('*' * len(self.heading)))
+        self.appendLine('****{0}****'.format('*' * lenHeading))
         self.appendLine('')
         self.appendLine('--- Press ESC to quit ---')
         self.appendLine('')

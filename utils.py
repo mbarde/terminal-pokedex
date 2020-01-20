@@ -28,7 +28,7 @@ def get_color(r, g, b, a):
 
 
 # https://github.com/nikhilkumarsingh/terminal-image-viewer
-def show_image(img_path, menu, offset=(0, 0), max_height=False):
+def show_image(pokemon, img_path, menu, offset=(0, 0), max_height=False):
     try:
         img = Image.open(img_path).convert('RGBA')
     except FileNotFoundError:
@@ -50,12 +50,34 @@ def show_image(img_path, menu, offset=(0, 0), max_height=False):
     offX = offset[0]
     offY = offset[1]
 
+    clrCounts = {}
     for y in range(h):
         line = ''
         for x in range(w):
             pix = img_arr[y][x]
             line += get_color(pix[0], pix[1], pix[2], pix[3])
-        menu.insertIntoVirtualLines(line, offset=(offX, y + offY))
+            clr = (pix[0], pix[1], pix[2])
+            if pix[3] > 0:
+                if clr in clrCounts:
+                    clrCounts[clr] += 1
+                else:
+                    clrCounts[clr] = 1
+        menu.insertIntoVirtualLines(line, offset=(offX, y + offY + 2))
+
+    domClr = list(clrCounts.keys())[0]
+    for clr in clrCounts:
+        if clrCounts[clr] > clrCounts[domClr]:
+            domClr = clr
+
+    label = '#{0} {1}'.format(pokemon['id'], pokemon['name'].upper())
+    fillCount = int((w - len(label)) / 2) + 1
+    bgClr = int(get_ansi_color_code(domClr[0], domClr[1], domClr[2]))
+    bgClrInverted = int(get_ansi_color_code(255 - domClr[0], 255 - domClr[1], 255 - domClr[2]))
+    # clr1 = int(get_ansi_color_code(255, 0, 0))
+    line = '\x1b[48;5;{0}m\x1b[1m\x1b[38;5;{1}m{2}{3}{2}\x1b[1m\x1b[0m'.format(
+        bgClr, bgClrInverted, ' ' * fillCount, label)
+    menu.insertIntoVirtualLines(line, offset=(offX, offY))
+    return domClr
 
 
 # https://stackoverflow.com/a/6599441
