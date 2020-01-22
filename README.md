@@ -10,3 +10,12 @@ source venv/bin/activate
 pip install -r requirements
 python main.py
 ```
+
+### Choose language
+by passing the language code as argument:
+
+```
+python main.py de
+```
+
+List of supported languages: [https://pokeapi.co/api/v2/language](https://pokeapi.co/api/v2/language)

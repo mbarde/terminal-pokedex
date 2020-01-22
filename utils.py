@@ -138,7 +138,9 @@ def read_single_keypress():
 def get_json_from_url(url):
     http = urllib3.PoolManager()
     res = http.request('GET', url)
-    jsonData = json.loads(res.data)
+    jsonData = None
+    if res.status == 200:
+        jsonData = json.loads(res.data)
     res.release_conn()
     return jsonData
 
@@ -156,6 +158,14 @@ def get_poke_name_by_language(pokemon_data, language_code):
         if name['language']['name'] == language_code:
             return name['name']
     return pokemon_data['name']
+
+
+def is_valid_lang_code(language_code):
+    url = 'https://pokeapi.co/api/v2/language/{0}'.format(language_code)
+    res = get_json_from_url(url)
+    if res is None:
+        return False
+    return True
 
 
 def download_file(url, filename):
