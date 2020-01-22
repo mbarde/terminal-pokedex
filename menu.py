@@ -155,7 +155,7 @@ class Menu:
         self.virtualLines[offY] = virtualLine
 
     def renderVirtualLines(self):
-        os.system('clear')
+        self.clear()
         for line in self.virtualLines:
             print(line)
 
@@ -193,3 +193,6 @@ class Menu:
         self.clearVirtualLines()
         self.writeMenu()
         self.renderVirtualLines()
+
+    def clear(self):
+        os.system('clear')

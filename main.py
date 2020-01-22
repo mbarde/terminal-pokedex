@@ -9,7 +9,7 @@ KEYS_DOWN = ('\x1b', '[', 'B')
 KEYS_ENTER = ('\r',)
 KEYS_ESC = ('\x1b',)
 
-
+langCode = 'en'
 if len(sys.argv) > 1:
     langCode = sys.argv[1]
 
@@ -27,5 +27,6 @@ while True:
         menu.clickSelection()
 
     if keys == KEYS_ESC:
-        print('\nbye :)')
+        menu.clear()
+        print('\nbye 👋')
         break
