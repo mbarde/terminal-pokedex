@@ -69,7 +69,8 @@ def show_image(pokemon, img_path, menu, offset=(0, 0), max_height=False):
         if clrCounts[clr] > clrCounts[domClr]:
             domClr = clr
 
-    label = '#{0} {1}'.format(pokemon['id'], pokemon['name'].upper())
+    name = get_poke_name_by_language(pokemon, menu.language)
+    label = '#{0} {1}'.format(pokemon['id'], name.upper())
     fillCount = int((w - len(label)) / 2) + 1
     bgClr = int(get_ansi_color_code(domClr[0], domClr[1], domClr[2]))
     bgClrInverted = int(get_ansi_color_code(255 - domClr[0], 255 - domClr[1], 255 - domClr[2]))
@@ -140,6 +141,21 @@ def get_json_from_url(url):
     jsonData = json.loads(res.data)
     res.release_conn()
     return jsonData
+
+
+def get_poke_name_by_language(pokemon_data, language_code):
+    species = pokemon_data.get('species', None)
+    if species is None:
+        return pokemon_data['name']
+    speciesUrl = species.get('url', None)
+    if speciesUrl is None:
+        return pokemon_data['name']
+    species = get_json_from_url(speciesUrl)
+    names = species.get('names', [])
+    for name in names:
+        if name['language']['name'] == language_code:
+            return name['name']
+    return pokemon_data['name']
 
 
 def download_file(url, filename):

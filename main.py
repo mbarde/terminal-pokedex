@@ -1,5 +1,6 @@
 from utils import download_file
 from utils import get_json_from_url
+from utils import get_poke_name_by_language
 from utils import read_single_keypress
 from utils import remove_ansi_clr_codes
 from utils import show_image
@@ -17,6 +18,7 @@ class Menu:
         self.curOffset = 0
         self.heading = 'SELECT AND PRESS ENTER'
         self.isLoading = False
+        self.language = 'de'
         self.limitPerPage = 20
         self.options = []
         self.preventNextRender = False
@@ -44,8 +46,9 @@ class Menu:
                 'onclick': self.viewRandomImage
             })
         for pokemon in pokemons:
+            pokemonData = get_json_from_url(pokemon['url'])
             option = {
-                'label': pokemon['name'].capitalize(),
+                'label': get_poke_name_by_language(pokemonData, self.language),
                 'onclick': functools.partial(self.viewImage, pokemon['url']),
             }
             self.options.append(option)
@@ -74,7 +77,8 @@ class Menu:
 
         if imgUrl is None:
             self.isLoading = False
-            msg = 'Found no sprite for {0} (#{1}) :('.format(data['name'].capitalize(), data['id'])
+            name = get_poke_name_by_language(data, self.language)
+            msg = 'Found no sprite for {0} (#{1}) :('.format(name.capitalize(), data['id'])
             self.clearVirtualLines()
             self.writeMenu()
             self.insertIntoVirtualLines(msg, offset=(40, 5))
